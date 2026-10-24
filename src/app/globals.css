@@ -1,3 +1,4 @@
+@import 'https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap';
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -35,6 +36,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -43,95 +48,263 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
   --font-sans:
-    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', ui-sans-serif,
-    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+    'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
   --font-serif:
-    'Noto Serif SC', 'Songti SC', 'SimSun', ui-serif, Georgia, Cambria,
-    'Times New Roman', Times, serif;
+    'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, Cambria, 'Times New Roman',
+    Times, serif;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --radius: 0.5rem;
+  /* 米白纸色与墨色体系 */
+  --background: oklch(0.982 0.006 80);
+  --foreground: oklch(0.21 0.015 60);
+  --card: oklch(1 0.003 90);
+  --card-foreground: oklch(0.21 0.015 60);
+  --popover: oklch(1 0.003 90);
+  --popover-foreground: oklch(0.21 0.015 60);
+  /* 朱砂主行动色 */
+  --primary: oklch(0.58 0.17 35);
+  --primary-foreground: oklch(0.985 0.006 80);
+  --secondary: oklch(0.955 0.01 75);
+  --secondary-foreground: oklch(0.26 0.02 60);
+  --muted: oklch(0.952 0.009 75);
+  --muted-foreground: oklch(0.52 0.014 62);
+  --accent: oklch(0.945 0.02 60);
+  --accent-foreground: oklch(0.3 0.04 40);
+  --destructive: oklch(0.577 0.22 27);
+  --border: oklch(0.9 0.009 70);
+  --input: oklch(0.9 0.009 70);
+  --ring: oklch(0.58 0.17 35 / 0.35);
+  /* 苔绿匹配 / 陶土橙短板 */
+  --success: oklch(0.6 0.1 155);
+  --success-foreground: oklch(0.98 0.01 150);
+  --warning: oklch(0.68 0.13 55);
+  --warning-foreground: oklch(0.99 0.005 90);
+  --chart-1: oklch(0.58 0.17 35);
+  --chart-2: oklch(0.6 0.1 155);
+  --chart-3: oklch(0.68 0.13 55);
+  --chart-4: oklch(0.55 0.06 250);
+  --chart-5: oklch(0.5 0.02 60);
+  --sidebar: oklch(0.975 0.008 78);
+  --sidebar-foreground: oklch(0.21 0.015 60);
+  --sidebar-primary: oklch(0.58 0.17 35);
+  --sidebar-primary-foreground: oklch(0.985 0.006 80);
+  --sidebar-accent: oklch(0.945 0.02 60);
+  --sidebar-accent-foreground: oklch(0.3 0.04 40);
+  --sidebar-border: oklch(0.9 0.009 70);
+  --sidebar-ring: oklch(0.58 0.17 35 / 0.35);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+  ::selection {
+    background: oklch(0.58 0.17 35 / 0.18);
   }
 }
 
-body {
-  @apply font-sans;
+/* 细滚动条 */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: oklch(0.82 0.01 70);
+  border-radius: 8px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* A4 简历纸张 */
+.resume-paper {
+  background: oklch(1 0.003 90);
+  box-shadow:
+    0 1px 2px rgb(30 25 20 / 0.05),
+    0 8px 28px -12px rgb(30 25 20 / 0.14);
+}
+
+/* Markdown 渲染样式（简历 & 面试建议） */
+.md-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: oklch(0.24 0.014 60);
+  word-break: break-word;
+}
+.md-body h1 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 10px;
+  color: oklch(0.2 0.015 60);
+}
+.md-body h2 {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 20px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid oklch(0.88 0.01 70);
+  color: oklch(0.22 0.02 50);
+}
+.md-body h3 {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 14px 0 4px;
+  color: oklch(0.24 0.02 50);
+}
+.md-body h2:first-child,
+.md-body h3:first-child {
+  margin-top: 0;
+}
+.md-body p {
+  margin: 6px 0;
+}
+.md-body ul,
+.md-body ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.md-body ul {
+  list-style: none;
+  padding-left: 2px;
+}
+.md-body ul > li {
+  position: relative;
+  padding-left: 16px;
+  margin: 4px 0;
+}
+.md-body ul > li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: oklch(0.58 0.17 35);
+}
+.md-body ol {
+  list-style: decimal;
+}
+.md-body ol > li {
+  padding-left: 4px;
+  margin: 4px 0;
+}
+.md-body ol > li::marker {
+  color: oklch(0.58 0.17 35);
+  font-weight: 600;
+}
+.md-body strong {
+  font-weight: 600;
+  color: oklch(0.2 0.015 60);
+}
+.md-body hr {
+  border: none;
+  border-top: 1px solid oklch(0.9 0.008 70);
+  margin: 16px 0;
+}
+.md-body blockquote {
+  border-left: 3px solid oklch(0.58 0.17 35 / 0.55);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: oklch(0.42 0.015 60);
+  background: oklch(0.97 0.01 70 / 0.6);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+}
+.md-body code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: oklch(0.95 0.01 70);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.md-body h1 + p {
+  color: oklch(0.4 0.012 60);
+  font-size: 13px;
+}
+/* 简历纸张内更紧凑的排版 */
+.resume-paper .md-body {
+  font-size: 13.5px;
+  line-height: 1.68;
+}
+.resume-paper .md-body h1 {
+  font-size: 24px;
+  text-align: center;
+}
+.resume-paper .md-body h1 + p {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.resume-paper .md-body h2 {
+  font-size: 15px;
+  margin: 16px 0 6px;
+}
+
+/* 流式光标 */
+.stream-caret::after {
+  content: '▍';
+  color: oklch(0.58 0.17 35);
+  animation: caret-blink 1s steps(2, start) infinite;
+  margin-left: 1px;
+}
+@keyframes caret-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* 步骤内容淡入 */
+.step-enter {
+  animation: step-fade 240ms ease-out;
+}
+@keyframes step-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 打印：只输出简历纸张 */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
 }

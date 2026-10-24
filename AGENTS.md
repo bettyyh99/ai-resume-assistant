@@ -63,3 +63,56 @@
 
 - 模板默认预装核心组件库 `shadcn/ui`，位于`src/components/ui/`目录下
 - Next.js 项目**必须默认**采用 shadcn/ui 组件、风格和规范，**除非用户指定用其他的组件和规范。**
+
+## 业务模块：AI 精准简历与面试助手
+
+四步向导单页应用（录入经验 → 选岗位 → 生成简历 → 面试建议），状态集中在 `src/app/page.tsx`，分步组件位于 `src/components/steps/`。
+
+### 关键目录
+
+```
+src/
+├── app/
+│   ├── page.tsx                     # 向导主页（步骤状态机 + profile/job 状态）
+│   └── api/
+│       ├── resume/parse/route.ts    # POST multipart：上传 PDF/Word/TXT → 结构化 UserProfile
+│       ├── resume/generate/route.ts # POST JSON：SSE 流式生成定向简历 Markdown
+│       └── interview/generate/route.ts # POST JSON：SSE 流式生成面试准备建议
+├── components/
+│   ├── stepper.tsx                  # 四步进度指示
+│   ├── markdown-renderer.tsx        # 零依赖 Markdown 渲染（解析见 lib/markdown-parse.ts）
+│   └── steps/
+│       ├── step-profile.tsx         # 步骤1：文件上传解析 + 在线表单
+│       ├── step-job.tsx             # 步骤2：目标岗位 + JD
+│       ├── step-resume.tsx          # 步骤3：流式生成 + A4 预览 + 编辑 + 导出
+│       └── step-interview.tsx       # 步骤4：STAR 面试建议（问答卡片展开）
+├── lib/
+│   ├── types.ts                     # UserProfile / WorkExperience / JobInput 等领域类型
+│   ├── sse-client.ts                # 前端 SSE reader（解析 data: 行）
+│   ├── profile-utils.ts             # 空对象工厂 / 本地化 / 校验
+│   ├── markdown-parse.ts            # 极简 Markdown → BlockNode 解析器
+│   └── export-docx.ts               # docx 库导出 Word（blob → 下载）
+└── server/
+    ├── llm-client.ts                # coze-coding-dev-sdk ChatClient 封装（仅服务端）
+    └── prompts.ts                   # 简历生成 / 面试建议 / 简历解析 prompt
+```
+
+### 集成说明
+
+- 统一使用 `coze-coding-dev-sdk`（**只能在服务端 route 内调用**）：
+  - `ChatClient`：大模型，默认模型 `doubao-seed-2-0-lite-260215`（常量 `DEFAULT_MODEL` 在 `server/llm-client.ts`，配额允许时可切回 pro）。
+  - `FetchClient`：PDF/Word 正文抽取（TXT 直接 `file.text()`，不走该服务）。
+  - `S3Storage`：上传文件临时存放 → 预签名 URL → 解析后删除。
+  - 所有客户端构造必须透传 `HeaderUtils.extractForwardHeaders(request.headers)`。
+- 生成类接口为 **SSE 流式**：事件类型 `status | delta | complete | error`，前端用 `lib/sse-client.ts` 读取；改动协议需前后端同步。
+- 简历模型输出为 Markdown（标题 `#` 姓名、`##` 版块），预览/导出共用同一份 Markdown。
+
+### 导出能力
+
+- Word：`docx` 库客户端生成 `.docx`；PDF：打印样式 `@media print` 调 `window.print()` 另存；Markdown：Blob 下载 `.md`。
+- 跨域资源下载必须 fetch+blob（本项目导出内容均为本地生成）。
+
+### 已知限制
+
+- 沙箱开发账户可能返回「资源点不足 / balance overdue」，属账户配额问题而非代码缺陷；`resume/parse` 对 TXT 已做降级（LLM 不可用时保留原文到 summary 并返回 warnings）。
+- 扫描件/图片版 PDF 无法抽取文字，接口返回 422 引导用户改用表单。

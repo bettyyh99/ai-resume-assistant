@@ -1,6 +1,14 @@
 'use client';
 
-import { Building2, FileText, Target } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Building2,
+  Clock,
+  FileText,
+  History,
+  Target,
+  Trash2,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,12 +19,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  deleteJobHistory,
+  formatSavedTime,
+  getJobHistory,
+  saveJobHistory,
+  type JobHistoryItem,
+} from '@/lib/history-storage';
 import { cn } from '@/lib/utils';
 import type { TargetJob } from '@/lib/types';
 
 interface StepJobProps {
   job: TargetJob;
   onChange: (job: TargetJob) => void;
+  /** 从第 2 步进入第 3 步时自增，用于触发自动保存当前岗位 */
+  saveTick: number;
 }
 
 const LENGTH_OPTIONS: {
@@ -29,9 +46,41 @@ const LENGTH_OPTIONS: {
   { value: 'two-page', title: '详尽两页', desc: '展开项目细节，适合资深 / 技术岗' },
 ];
 
-export function StepJob({ job, onChange }: StepJobProps) {
+export function StepJob({ job, onChange, saveTick }: StepJobProps) {
+  const [history, setHistory] = useState<JobHistoryItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHistory(getJobHistory());
+    setHydrated(true);
+  }, []);
+
+  // 点击「生成定制简历」时 page 层自增 saveTick，触发自动保存
+  useEffect(() => {
+    if (saveTick === 0 || !job.title.trim()) return;
+    const next = getJobHistory();
+    const exists = next.some(
+      (item) =>
+        item.job.title.trim() === job.title.trim() &&
+        item.job.company.trim() === job.company.trim() &&
+        item.job.jd.trim() === job.jd.trim(),
+    );
+    if (!exists) {
+      setHistory(saveJobHistory(job));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveTick]);
+
   const set = <K extends keyof TargetJob>(key: K, value: TargetJob[K]) =>
     onChange({ ...job, [key]: value });
+
+  const loadFromHistory = (item: JobHistoryItem) => {
+    onChange(structuredClone(item.job));
+  };
+
+  const removeFromHistory = (id: string) => {
+    setHistory(deleteJobHistory(id));
+  };
 
   return (
     <div className="step-enter space-y-6">
@@ -40,9 +89,69 @@ export function StepJob({ job, onChange }: StepJobProps) {
           描述你的目标岗位
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          粘贴完整 JD 效果最好——AI 会提炼岗位关键词，让简历与面试准备精准对齐招聘要求。
+          粘贴完整 JD 效果最好——AI 会提炼岗位关键词，让简历与面试准备精准对齐招聘要求。点击「生成定制简历」时会自动保存岗位到本地历史（最多 8 个）。
         </p>
       </div>
+
+      {hydrated && history.length > 0 && (
+        <Card className="border-dashed">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 font-serif text-base">
+                <History className="size-4 text-primary/80" />
+                历史岗位
+              </CardTitle>
+              <span className="text-xs text-muted-foreground">
+                本地保存 · {history.length}/{8}
+              </span>
+            </div>
+            <CardDescription>
+              点击可快速复用之前填写的岗位信息，最多保存 8 个，超出后自动替换最旧记录。
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {history.map((item) => (
+                <li
+                  key={item.id}
+                  className={cn(
+                    'group flex items-start gap-3 rounded-lg border bg-card p-3 transition-colors',
+                    item.job.title === job.title && item.job.jd === job.jd
+                      ? 'border-primary/50 bg-primary/[0.03]'
+                      : 'border-border hover:border-primary/40',
+                  )}
+                >
+                  <button
+                    type="button"
+                    onClick={() => loadFromHistory(item)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <span className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                      <Target className="size-3.5 shrink-0 text-primary/70" />
+                      <span className="truncate">{item.label}</span>
+                    </span>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {item.headline}
+                    </p>
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground/80">
+                      <Clock className="size-3" />
+                      {formatSavedTime(item.savedAt)}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeFromHistory(item.id)}
+                    aria-label="删除该历史岗位"
+                    className="rounded p-1 text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

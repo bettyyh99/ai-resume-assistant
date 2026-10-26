@@ -89,6 +89,7 @@ src/
 ├── lib/
 │   ├── types.ts                     # UserProfile / WorkExperience / JobInput 等领域类型
 │   ├── sse-client.ts                # 前端 SSE reader（解析 data: 行）
+│   ├── history-storage.ts           # localStorage 历史简历（≤5）/ 历史岗位（≤8）
 │   ├── profile-utils.ts             # 空对象工厂 / 本地化 / 校验
 │   ├── markdown-parse.ts            # 极简 Markdown → BlockNode 解析器
 │   └── export-docx.ts               # docx 库导出 Word（blob → 下载）
@@ -111,6 +112,13 @@ src/
 
 - Word：`docx` 库客户端生成 `.docx`；PDF：打印样式 `@media print` 调 `window.print()` 另存；Markdown：Blob 下载 `.md`。
 - 跨域资源下载必须 fetch+blob（本项目导出内容均为本地生成）。
+
+### 本地历史记录
+
+- 存浏览器 `localStorage`（key：`zhimo-resume-history-v1` / `zhimo-job-history-v1`），不走服务端。
+- 历史简历最多 5 份：上传解析成功自动存入（`source: upload`），表单模式可手动存入（`manual`）；StepProfile 内可一键载入/删除。
+- 历史岗位最多 8 个：第 2 步点击「生成定制简历」时自动保存（page 层 `jobSaveTick` 驱动）；StepJob 内可一键复用/删除。
+- 内容指纹去重（简历：姓名+意向+首段工作+技能；岗位：标题+公司+JD），重复时置顶更新；超限淘汰最旧。
 
 ### 已知限制
 

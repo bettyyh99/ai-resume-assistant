@@ -61,6 +61,7 @@ export default function Home() {
   const [job, setJob] = useState<TargetJob>(createDefaultJob);
   const [resumeMarkdown, setResumeMarkdown] = useState('');
   const [prep, setPrep] = useState<InterviewPrep | null>(null);
+  const [jobSaveTick, setJobSaveTick] = useState(0);
 
   useEffect(() => {
     const saved = loadState();
@@ -197,7 +198,9 @@ export default function Home() {
                   onParsed={handleParsed}
                 />
               )}
-              {step === 2 && <StepJob job={job} onChange={setJob} />}
+              {step === 2 && (
+                <StepJob job={job} onChange={setJob} saveTick={jobSaveTick} />
+              )}
               {step === 3 && (
                 <StepResume
                   profile={profile}
@@ -233,6 +236,7 @@ export default function Home() {
                     onClick={() => {
                       if (step === 1 && !canNextFromStep1) return;
                       if (step === 2 && !canNextFromStep2) return;
+                      if (step === 2) setJobSaveTick((n) => n + 1);
                       goTo((step + 1) as WizardStep);
                     }}
                     disabled={

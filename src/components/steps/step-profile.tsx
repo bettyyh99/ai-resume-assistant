@@ -1,11 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Bookmark,
   Briefcase,
+  Clock,
   FileUp,
   FileText,
   GraduationCap,
+  History,
   Loader2,
   PenLine,
   Plus,
@@ -40,6 +43,14 @@ import type {
   UserProfile,
   WorkExperience,
 } from '@/lib/types';
+import {
+  deleteResumeHistory,
+  formatSavedTime,
+  getResumeHistory,
+  saveResumeHistory,
+  type ResumeHistoryItem,
+} from '@/lib/history-storage';
+import { profileHasContent } from '@/lib/profile-utils';
 import { cn } from '@/lib/utils';
 
 interface StepProfileProps {
@@ -68,7 +79,14 @@ export function StepProfile({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [history, setHistory] = useState<ResumeHistoryItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setHistory(getResumeHistory());
+    setHydrated(true);
+  }, []);
 
   const setField = <K extends keyof UserProfile>(
     key: K,
@@ -101,13 +119,41 @@ export function StepProfile({
         throw new Error(data.error ?? '解析失败');
       }
       onParsed(data);
-      toast.success('简历解析完成，请核对识别结果');
+      // 与 page 层保持一致的联系方式合并，然后自动存入历史简历
+      const merged: UserProfile = {
+        ...data.profile,
+        phone: data.profile.phone || profile.phone,
+        email: data.profile.email || profile.email,
+      };
+      const next = saveResumeHistory(merged, 'upload');
+      setHistory(next);
+      toast.success('简历解析完成，已自动存入历史简历');
       setMode('form');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '简历解析失败');
     } finally {
       setUploading(false);
     }
+  };
+
+  const saveToLibrary = () => {
+    if (!profileHasContent(profile)) {
+      toast.error('简历内容为空，先填写或上传一些信息吧');
+      return;
+    }
+    const next = saveResumeHistory(profile, 'manual');
+    setHistory(next);
+    toast.success(`已存入历史简历（最多保存 ${next.length} 份）`);
+  };
+
+  const loadFromHistory = (item: ResumeHistoryItem) => {
+    onChange(structuredClone(item.profile));
+    setMode('form');
+    toast.success(`已载入「${item.label}」，生成结果需重新生成`);
+  };
+
+  const removeFromHistory = (id: string) => {
+    setHistory(deleteResumeHistory(id));
   };
 
   const loadSample = () => {
@@ -124,7 +170,7 @@ export function StepProfile({
             录入你的过往经验
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            上传简历由 AI 自动识别，或直接在线填写。信息仅用于本次生成，不会被持久化保存。
+            上传简历由 AI 自动识别，或直接在线填写。上传成功的简历会自动存入本地历史（最多 5 份），仅保存在你的浏览器中。
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={loadSample}>
@@ -133,7 +179,74 @@ export function StepProfile({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-card p-1 sm:max-w-md">
+      {hydrated && history.length > 0 && (
+        <Card className="border-dashed">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 font-serif text-base">
+                <History className="size-4 text-primary/80" />
+                历史简历
+              </CardTitle>
+              <span className="text-xs text-muted-foreground">
+                本地保存 · {history.length}/{5}
+              </span>
+            </div>
+            <CardDescription>
+              上传解析成功的简历会自动保存，最多 5 份，超出后自动替换最旧记录。
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {history.map((item) => (
+                <li
+                  key={item.id}
+                  className="group flex items-start gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40"
+                >
+                  <button
+                    type="button"
+                    onClick={() => loadFromHistory(item)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold">
+                        {item.label}
+                      </span>
+                      <span
+                        className={cn(
+                          'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium',
+                          item.source === 'upload'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-muted text-muted-foreground',
+                        )}
+                      >
+                        {item.source === 'upload' ? '上传解析' : '手动保存'}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {item.headline}
+                    </p>
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground/80">
+                      <Clock className="size-3" />
+                      {formatSavedTime(item.savedAt)}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeFromHistory(item.id)}
+                    aria-label="删除该历史简历"
+                    className="rounded p-1 text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="grid flex-1 grid-cols-2 gap-2 rounded-lg border border-border bg-card p-1 sm:max-w-md">
         <button
           type="button"
           onClick={() => setMode('upload')}
@@ -160,6 +273,13 @@ export function StepProfile({
           <PenLine className="size-4" />
           在线填写
         </button>
+        </div>
+        {mode === 'form' && (
+          <Button variant="outline" size="sm" onClick={saveToLibrary}>
+            <Bookmark className="size-4" />
+            存入历史简历
+          </Button>
+        )}
       </div>
 
       {mode === 'upload' ? (

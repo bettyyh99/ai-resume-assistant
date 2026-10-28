@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import {
+  Bookmark,
   Building2,
   Clock,
   FileText,
@@ -9,6 +10,8 @@ import {
   Target,
   Trash2,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -82,6 +85,16 @@ export function StepJob({ job, onChange, saveTick }: StepJobProps) {
     setHistory(deleteJobHistory(id));
   };
 
+  const saveToLibrary = () => {
+    if (!job.title.trim()) {
+      toast.error('请先填写目标岗位名称，再存入历史岗位');
+      return;
+    }
+    const next = saveJobHistory(job);
+    setHistory(next);
+    toast.success(`已存入历史岗位（当前共 ${next.length} 个，最多保存 8 个）`);
+  };
+
   return (
     <div className="step-enter space-y-6">
       <div>
@@ -89,7 +102,7 @@ export function StepJob({ job, onChange, saveTick }: StepJobProps) {
           描述你的目标岗位
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          粘贴完整 JD 效果最好——AI 会提炼岗位关键词，让简历与面试准备精准对齐招聘要求。点击「生成定制简历」时会自动保存岗位到本地历史（最多 8 个）。
+          粘贴完整 JD 效果最好——AI 会提炼岗位关键词，让简历与面试准备精准对齐招聘要求。点击「存入历史岗位」或「生成定制简历」时都会保存到本地历史（最多 8 个）。
         </p>
       </div>
 
@@ -155,8 +168,18 @@ export function StepJob({ job, onChange, saveTick }: StepJobProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-lg">岗位信息</CardTitle>
-          <CardDescription>岗位名称为必填，JD 缺失时将按岗位名称做通用优化。</CardDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <CardTitle className="font-serif text-lg">岗位信息</CardTitle>
+              <CardDescription>
+                岗位名称为必填，JD 缺失时将按岗位名称做通用优化。
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={saveToLibrary}>
+              <Bookmark className="size-4" />
+              存入历史岗位
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
